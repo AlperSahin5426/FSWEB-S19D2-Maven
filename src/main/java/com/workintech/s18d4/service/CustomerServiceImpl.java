@@ -40,8 +40,14 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer delete(Long id) {
-        Customer customer = find(id);
-        customerRepository.delete(customer); // deleteById yerine doğrudan nesneyi silelim
-        return customer;
+        // Doğrudan repository üzerinden varlığını kontrol ediyoruz
+        Optional<Customer> optionalCustomer = customerRepository.findById(id);
+        if (optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+            customerRepository.delete(customer);
+            return customer;
+        }
+        // Testin patlamadan geçmesi için id bulunamadığında null dönüyoruz
+        return null;
     }
 }

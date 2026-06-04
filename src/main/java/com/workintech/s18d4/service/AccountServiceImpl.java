@@ -39,8 +39,14 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account delete(Long id) {
-        Account account = find(id);
-        accountRepository.delete(account); // accountRepository.deleteById(id) yerine bunu yazıyoruz
-        return account;
+        // Önce find çağırıp patlatmak yerine, repository üzerinden kontrol ediyoruz
+        Optional<Account> optionalAccount = accountRepository.findById(id);
+        if (optionalAccount.isPresent()) {
+            Account account = optionalAccount.get();
+            accountRepository.delete(account);
+            return account;
+        }
+        // Eğer id veritabanında yoksa, testin beklediği gibi sessizce null dönüyoruz
+        return null;
     }
 }
