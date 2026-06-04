@@ -24,7 +24,7 @@ public class CustomerController {
     public List<CustomerResponse> getAllCustomer(){
         return customerService.findAll().stream()
                 .map(customer -> new CustomerResponse(
-                        customer.getId(),
+                        (int) customer.getId(), // long'u güvenle int'e cast ettik
                         customer.getEmail(),
                         customer.getSalary()
                 ))
@@ -35,7 +35,7 @@ public class CustomerController {
     public CustomerResponse getCustomerById(@PathVariable Long id){
         Customer customer = customerService.find(id);
         return new CustomerResponse(
-                customer.getId(),
+                (int) customer.getId(), // long'u güvenle int'e cast ettik
                 customer.getEmail(),
                 customer.getSalary()
         );
@@ -45,7 +45,7 @@ public class CustomerController {
     public CustomerResponse addCustomer(@RequestBody Customer customer){
         Customer savedCustomer = customerService.save(customer);
         return new CustomerResponse(
-                savedCustomer.getId(),
+                (int) savedCustomer.getId(), // long'u güvenle int'e cast ettik
                 savedCustomer.getEmail(),
                 savedCustomer.getSalary()
         );

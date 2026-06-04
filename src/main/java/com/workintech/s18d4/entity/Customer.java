@@ -2,6 +2,7 @@ package com.workintech.s18d4.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference; // Eklendi
 import java.util.List;
 
 @NoArgsConstructor
@@ -22,7 +23,6 @@ public class Customer {
     @Column(name = "last_name")
     private String lastName;
 
-    // unique = true kısıtlamasını testin çakışmaması için kaldırdık
     @Column(name = "email")
     private String email;
 
@@ -33,10 +33,10 @@ public class Customer {
     @JoinColumn(name = "address_id")
     private Address address;
 
+    @JsonManagedReference // Döngüyü kırmak için eklendi
     @OneToMany(mappedBy = "customer", cascade = CascadeType.REMOVE)
     private List<Account> accounts;
 
-    // Test dosyalarındaki primitive cast uyumluluğu için bu metot kalabilir
     public long getId() {
         return id != null ? id : 0L;
     }

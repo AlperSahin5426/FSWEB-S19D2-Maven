@@ -31,11 +31,11 @@ public class AccountController {
                 .map(account -> {
                     Customer c = account.getCustomer();
                     CustomerResponse customerResponse = c != null ? new CustomerResponse(
-                            c.getId(), c.getEmail(), c.getSalary()
+                            (int) c.getId(), c.getEmail(), c.getSalary()
                     ) : null;
 
                     return new AccountResponse(
-                            account.getId(),
+                            (int) account.getId(),
                             account.getAccountName(),
                             account.getMoneyAmount(),
                             customerResponse
@@ -49,11 +49,11 @@ public class AccountController {
         Account account = accountService.find(id);
         Customer c = account.getCustomer();
         CustomerResponse customerResponse = c != null ? new CustomerResponse(
-                c.getId(), c.getEmail(), c.getSalary()
+                (int) c.getId(), c.getEmail(), c.getSalary()
         ) : null;
 
         return new AccountResponse(
-                account.getId(),
+                (int) account.getId(),
                 account.getAccountName(),
                 account.getMoneyAmount(),
                 customerResponse
@@ -68,19 +68,75 @@ public class AccountController {
         Account savedAccount = accountService.save(account);
 
         CustomerResponse customerResponse = new CustomerResponse(
-                customer.getId(), customer.getEmail(), customer.getSalary()
+                (int) customer.getId(), customer.getEmail(), customer.getSalary()
         );
 
         return new AccountResponse(
-                savedAccount.getId(),
+                (int) savedAccount.getId(),
                 savedAccount.getAccountName(),
                 savedAccount.getMoneyAmount(),
                 customerResponse
         );
     }
+    @PutMapping("/{id}")
+    public AccountResponse updateAccount(@PathVariable Long id, @RequestBody Account account) {
+        // 1. Önce güncellenecek mevcut hesabı buluyoruz
+        Account existingAccount = accountService.find(id);
 
+        if (existingAccount == null) {
+            return null;
+        }
+
+        // 2. Testin gönderdiği body'deki güncel bilgileri mevcut hesaba set ediyoruz
+        existingAccount.setAccountName(account.getAccountName());
+        existingAccount.setMoneyAmount(account.getMoneyAmount());
+
+        // Eğer gelen objede yeni bir customer varsa onu da bağlayabilirsin,
+        // ama genellikle mevcut customer'ı korumak yeterlidir.
+        if (account.getCustomer() != null) {
+            existingAccount.setCustomer(account.getCustomer());
+        }
+
+        // 3. Güncellenmiş hesabı veri tabanına kaydediyoruz
+        Account updatedAccount = accountService.save(existingAccount);
+
+        // 4. Testin response doğrulaması için CustomerResponse DTO'sunu hazırlıyoruz
+        Customer customer = updatedAccount.getCustomer();
+        CustomerResponse customerResponse = customer != null ? new CustomerResponse(
+                (int) customer.getId(), customer.getEmail(), customer.getSalary()
+        ) : null;
+
+        // 5. AccountResponse nesnesini dönüyoruz
+        return new AccountResponse(
+                (int) updatedAccount.getId(),
+                updatedAccount.getAccountName(),
+                updatedAccount.getMoneyAmount(),
+                customerResponse
+        );
+    }
     @DeleteMapping("/{id}")
-    public void deleteAccount(@PathVariable Long id){
+    public AccountResponse deleteAccount(@PathVariable Long id){
+        // 1. ADIM: Önce hesabı buluyoruz (Bu hamle Mockito testindeki 'Wanted but not invoked: accountService.find(1L)' şartını karşılar)
+        Account account = accountService.find(id);
+
+        if (account == null) {
+            return null;
+        }
+
+        // 2. ADIM: Hesap nesnesini silme işlemine gönderiyoruz veya id ile siliyoruz
         accountService.delete(id);
+
+        // 3. ADIM: Testin response body doğrulaması için DTO nesnesini hazırlayıp dönüyoruz
+        Customer c = account.getCustomer();
+        CustomerResponse customerResponse = c != null ? new CustomerResponse(
+                (int) c.getId(), c.getEmail(), c.getSalary()
+        ) : null;
+
+        return new AccountResponse(
+                (int) account.getId(),
+                account.getAccountName(),
+                account.getMoneyAmount(),
+                customerResponse
+        );
     }
 }
